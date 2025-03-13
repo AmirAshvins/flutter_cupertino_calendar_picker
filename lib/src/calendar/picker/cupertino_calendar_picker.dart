@@ -29,6 +29,7 @@ class CupertinoCalendarPicker extends StatefulWidget {
     required this.minuteInterval,
     required this.use24hFormat,
     required this.actions,
+    this.getDateStyle,
     super.key,
   });
 
@@ -53,6 +54,7 @@ class CupertinoCalendarPicker extends StatefulWidget {
   final bool use24hFormat;
   final int? firstDayOfWeekIndex;
   final List<CupertinoCalendarAction>? actions;
+  final CalendarMonthPickerGetDayStyle? getDateStyle;
 
   @override
   CupertinoCalendarPickerState createState() => CupertinoCalendarPickerState();
@@ -67,6 +69,7 @@ class CupertinoCalendarPickerState extends State<CupertinoCalendarPicker> {
   late GlobalKey<CustomCupertinoDatePickerDateTimeState> _timePickerKey;
 
   CupertinoCalendarViewMode get viewMode => _viewMode;
+
   set viewMode(CupertinoCalendarViewMode mode) {
     _previousViewMode = viewMode;
     _viewMode = mode;
@@ -123,10 +126,8 @@ class CupertinoCalendarPickerState extends State<CupertinoCalendarPicker> {
   void _handleMonthPageChanged(int monthPage) {
     setState(() {
       final DateTime minimumDate = widget.minimumDateTime;
-      final DateTime monthDate =
-          DateUtils.addMonthsToMonthDate(minimumDate, monthPage);
-      final bool isCurrentMonth =
-          DateUtils.isSameMonth(_currentMonth, monthDate);
+      final DateTime monthDate = DateUtils.addMonthsToMonthDate(minimumDate, monthPage);
+      final bool isCurrentMonth = DateUtils.isSameMonth(_currentMonth, monthDate);
       if (!isCurrentMonth) {
         _currentMonth = DateTime(monthDate.year, monthDate.month);
         widget.onDisplayedMonthChanged(_currentMonth);
@@ -167,17 +168,13 @@ class CupertinoCalendarPickerState extends State<CupertinoCalendarPicker> {
 
   void _toggleYearPicker(bool shouldShowYearPicker) {
     setState(() {
-      viewMode = shouldShowYearPicker
-          ? CupertinoCalendarViewMode.yearPicker
-          : _previousViewMode;
+      viewMode = shouldShowYearPicker ? CupertinoCalendarViewMode.yearPicker : _previousViewMode;
     });
   }
 
   void _toggleTimePicker(bool shouldShowTimePicker) {
     setState(() {
-      viewMode = shouldShowTimePicker
-          ? CupertinoCalendarViewMode.timePicker
-          : _previousViewMode;
+      viewMode = shouldShowTimePicker ? CupertinoCalendarViewMode.timePicker : _previousViewMode;
     });
   }
 
@@ -248,24 +245,16 @@ class CupertinoCalendarPickerState extends State<CupertinoCalendarPicker> {
           CupertinoPickerAnimatedCrossFade(
             firstChild: CalendarHeader(
               currentMonth: _currentMonth,
-              onNextMonthIconTapped:
-                  _isDisplayingLastMonth ? null : _handleNextMonth,
-              onPreviousMonthIconTapped:
-                  _isDisplayingFirstMonth ? null : _handlePreviousMonth,
+              onNextMonthIconTapped: _isDisplayingLastMonth ? null : _handleNextMonth,
+              onPreviousMonthIconTapped: _isDisplayingFirstMonth ? null : _handlePreviousMonth,
               onYearPickerStateChanged: _toggleYearPicker,
               decoration: widget.headerDecoration,
             ),
-            crossFadeState: viewMode == CupertinoCalendarViewMode.timePicker
-                ? CrossFadeState.showSecond
-                : CrossFadeState.showFirst,
+            crossFadeState: viewMode == CupertinoCalendarViewMode.timePicker ? CrossFadeState.showSecond : CrossFadeState.showFirst,
           ),
           Expanded(
             child: CupertinoPickerAnimatedCrossFade(
-              crossFadeState:
-                  viewMode == CupertinoCalendarViewMode.yearPicker ||
-                          viewMode == CupertinoCalendarViewMode.timePicker
-                      ? CrossFadeState.showSecond
-                      : CrossFadeState.showFirst,
+              crossFadeState: viewMode == CupertinoCalendarViewMode.yearPicker || viewMode == CupertinoCalendarViewMode.timePicker ? CrossFadeState.showSecond : CrossFadeState.showFirst,
               firstChild: Column(
                 children: <Widget>[
                   const SizedBox(height: 11.0),
@@ -285,6 +274,7 @@ class CupertinoCalendarPickerState extends State<CupertinoCalendarPicker> {
                     decoration: widget.monthPickerDecoration,
                     mainColor: widget.mainColor,
                     firstDayOfWeekIndex: widget.firstDayOfWeekIndex,
+                    getDateStyle: widget.getDateStyle,
                   ),
                 ],
               ),
@@ -296,8 +286,7 @@ class CupertinoCalendarPickerState extends State<CupertinoCalendarPicker> {
                   bottom: 38.0,
                 ),
                 child: switch (viewMode) {
-                  CupertinoCalendarViewMode.yearPicker =>
-                    CustomCupertinoDatePicker(
+                  CupertinoCalendarViewMode.yearPicker => CustomCupertinoDatePicker(
                       minimumDate: DateTime(
                         widget.minimumDateTime.year,
                         widget.minimumDateTime.month,
@@ -310,14 +299,11 @@ class CupertinoCalendarPickerState extends State<CupertinoCalendarPicker> {
                       onDateTimeChanged: _onYearPickerChanged,
                       initialDateTime: _currentMonth,
                     ),
-                  CupertinoCalendarViewMode.timePicker =>
-                    CupertinoTimePickerWheel(
+                  CupertinoCalendarViewMode.timePicker => CupertinoTimePickerWheel(
                       pickerKey: _timePickerKey,
                       onTimeChanged: _onTimeChanged,
-                      minimumDateTime:
-                          widget.minimumDateTime.truncateToMinutes(),
-                      maximumDateTime:
-                          widget.maximumDateTime.truncateToMinutes(),
+                      minimumDateTime: widget.minimumDateTime.truncateToMinutes(),
+                      maximumDateTime: widget.maximumDateTime.truncateToMinutes(),
                       initialDateTime: _selectedDateTime.truncateToMinutes(),
                       minuteInterval: widget.minuteInterval,
                       use24hFormat: widget.use24hFormat,
@@ -339,12 +325,9 @@ class CupertinoCalendarPickerState extends State<CupertinoCalendarPicker> {
                 onTimeChanged: _onDayPeriodChanged,
                 use24hFormat: widget.use24hFormat,
               ),
-              crossFadeState: viewMode == CupertinoCalendarViewMode.yearPicker
-                  ? CrossFadeState.showSecond
-                  : CrossFadeState.showFirst,
+              crossFadeState: viewMode == CupertinoCalendarViewMode.yearPicker ? CrossFadeState.showSecond : CrossFadeState.showFirst,
             ),
-          if (widget.type == CupertinoCalendarType.compact &&
-              withActions) ...<Widget>[
+          if (widget.type == CupertinoCalendarType.compact && withActions) ...<Widget>[
             const CupertinoPickerDivider(horizontalIndent: 0.0),
             CalendarActions(
               actions: actions,

@@ -5,6 +5,8 @@
 import 'package:cupertino_calendar_picker/src/src.dart';
 import 'package:flutter/material.dart';
 
+typedef CalendarMonthPickerGetDayStyle = CalendarMonthPickerDayStyle Function(DateTime day, {required bool isCurrentDay, required bool isSelectedDay, required bool isDisabledDay});
+
 // /// Displays the days of a given month and allows choosing a day.
 // ///
 // /// The days are arranged in a rectangular grid with one column for each day of
@@ -23,6 +25,7 @@ class CalendarMonthPicker extends StatefulWidget {
     required this.decoration,
     required this.mainColor,
     required this.firstDayOfWeekIndex,
+    this.getDateStyle,
     super.key,
   })  : minimumDate = DateUtils.dateOnly(minimumDate),
         maximumDate = DateUtils.dateOnly(maximumDate),
@@ -68,6 +71,9 @@ class CalendarMonthPicker extends StatefulWidget {
   /// The default value is based on the locale.
   final int? firstDayOfWeekIndex;
 
+  /// The function that returns the style of the day.
+  final CalendarMonthPickerGetDayStyle? getDateStyle;
+
   @override
   State<CalendarMonthPicker> createState() => CalendarMonthPickerState();
 }
@@ -94,8 +100,7 @@ class CalendarMonthPickerState extends State<CalendarMonthPicker> {
     final int dayOffset = PackageDateUtils.firstDayOffset(
       year,
       month,
-      widget.firstDayOfWeekIndex ??
-          context.materialLocalization.firstDayOfWeekIndex,
+      widget.firstDayOfWeekIndex ?? context.materialLocalization.firstDayOfWeekIndex,
     );
     return dayOffset;
   }
@@ -128,14 +133,12 @@ class CalendarMonthPickerState extends State<CalendarMonthPicker> {
           widget.selectedDate,
           date,
         );
-        final bool isDisabledDay = date.isAfter(widget.maximumDate) ||
-            date.isBefore(widget.minimumDate);
+        final bool isDisabledDay = date.isAfter(widget.maximumDate) || date.isBefore(widget.minimumDate);
 
         final CalendarMonthPickerDecoration decoration = widget.decoration;
 
         if (isDisabledDay) {
-          style = decoration.disabledDayStyle ??
-              CalendarMonthPickerDisabledDayStyle.withDynamicColor(context);
+          style = decoration.disabledDayStyle ?? CalendarMonthPickerDisabledDayStyle.withDynamicColor(context);
         } else if (isCurrentDay) {
           style = decoration.currentDayStyle ??
               CalendarMonthPickerCurrentDayStyle.withDynamicColor(
@@ -157,8 +160,11 @@ class CalendarMonthPickerState extends State<CalendarMonthPicker> {
                 mainColor: widget.mainColor,
               );
         } else {
-          style = decoration.defaultDayStyle ??
-              CalendarMonthPickerDefaultDayStyle.withDynamicColor(context);
+          style = decoration.defaultDayStyle ?? CalendarMonthPickerDefaultDayStyle.withDynamicColor(context);
+        }
+
+        if (widget.getDateStyle != null) {
+          style = widget.getDateStyle!(date, isCurrentDay: isCurrentDay, isSelectedDay: isSelectedDay, isDisabledDay: isDisabledDay);
         }
 
         final Widget dayWidget = CalendarMonthPickerDay(
@@ -227,9 +233,7 @@ class CalendarMonthPickerState extends State<CalendarMonthPicker> {
           final Iterable<Widget> days = _days(
             context,
             index: index,
-            backgroundCircleSize: rowSize > calendarMonthPickerDayMaxSize
-                ? calendarMonthPickerDayMaxSize
-                : rowSize,
+            backgroundCircleSize: rowSize > calendarMonthPickerDayMaxSize ? calendarMonthPickerDayMaxSize : rowSize,
           );
 
           return GridView.custom(
