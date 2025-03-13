@@ -35,6 +35,7 @@ class CupertinoCalendar extends StatefulWidget {
     this.use24hFormat,
     this.firstDayOfWeekIndex,
     this.actions,
+    this.getDateStyle,
     super.key,
   }) {
     // ignore: prefer_asserts_in_initializer_lists
@@ -162,6 +163,9 @@ class CupertinoCalendar extends StatefulWidget {
   /// Displayed only when the calendar is in the [CupertinoCalendarType.compact] mode.
   final List<CupertinoCalendarAction>? actions;
 
+  /// Function that returns the style of the day.
+  final CalendarMonthPickerGetDayStyle? getDateStyle;
+
   @override
   State<CupertinoCalendar> createState() => _CupertinoCalendarState();
 }
@@ -186,8 +190,7 @@ class _CupertinoCalendarState extends State<CupertinoCalendar> {
 
   void _initializeInitialDate() {
     final DateTime initialDateTime = widget.initialDateTime ?? DateTime.now();
-    _currentlyDisplayedMonthDate =
-        PackageDateUtils.monthDateOnly(initialDateTime);
+    _currentlyDisplayedMonthDate = PackageDateUtils.monthDateOnly(initialDateTime);
     _selectedDateTime = initialDateTime;
   }
 
@@ -283,8 +286,7 @@ class _CupertinoCalendarState extends State<CupertinoCalendar> {
         onDisplayedMonthChanged: _handleCalendarMonthChange,
         onYearPickerChanged: _handleCalendarDateChange,
         mainColor: widget.mainColor,
-        weekdayDecoration: widget.weekdayDecoration ??
-            CalendarWeekdayDecoration.withDynamicColor(context),
+        weekdayDecoration: widget.weekdayDecoration ?? CalendarWeekdayDecoration.withDynamicColor(context),
         monthPickerDecoration: widget.monthPickerDecoration ??
             CalendarMonthPickerDecoration.withDynamicColor(
               context,
@@ -295,14 +297,14 @@ class _CupertinoCalendarState extends State<CupertinoCalendar> {
               context,
               mainColor: widget.mainColor,
             ),
-        footerDecoration: widget.footerDecoration ??
-            CalendarFooterDecoration.withDynamicColor(context),
+        footerDecoration: widget.footerDecoration ?? CalendarFooterDecoration.withDynamicColor(context),
         mode: widget.mode,
         type: widget.type,
         timeLabel: widget.timeLabel,
         minuteInterval: widget.minuteInterval,
         use24hFormat: widget.use24hFormat ?? context.alwaysUse24hFormat,
         actions: widget.actions,
+        getDateStyle: widget.getDateStyle,
       ),
     );
   }
